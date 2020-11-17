@@ -2,12 +2,13 @@
 import urllib.request
 import urllib.error
 import time
+import os
 
 
 def detect_face():
     http_url = 'https://api-cn.faceplusplus.com/facepp/v3/detect'
-    key = "vTLWlxe8ooTcPutTopW624ANrOthhNeh"
-    secret = "yD118XLLTEaJCh4N2Zzs0XzJHViobsFL"
+    key = os.environ.get("API_KEY")
+    secret = os.environ.get("API_SECRET")
     image = r"/Users/xinjiezeng/Pictures/xinjie5.jpg"
 
     boundary = '----------%s' % hex(int(time.time() * 1000))

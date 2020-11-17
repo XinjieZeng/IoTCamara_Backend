@@ -2,13 +2,13 @@ import urllib.request
 import urllib.error
 import time
 from flask import json
-
+import os
 
 
 def compare_face():
     http_url = 'https://api-cn.faceplusplus.com/facepp/v3/compare'
-    key = "vTLWlxe8ooTcPutTopW624ANrOthhNeh"
-    secret = "yD118XLLTEaJCh4N2Zzs0XzJHViobsFL"
+    key = os.environ.get("API_KEY")
+    secret = os.environ.get("API_SECRET")
     token1 = "47ca871ce04f367fa099d542b90aeb9d"
     token2 = "4e79e2d1e33b44fa5ce6bedf25e4e338"
 
