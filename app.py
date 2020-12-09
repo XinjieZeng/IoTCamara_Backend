@@ -1,11 +1,9 @@
-from flask import Flask, render_template, request, jsonify, json
-from facedetect import detect_face
+from flask import Flask, request
 from facecompare import compare_face
 from flask_mysqldb import MySQL
 import os
-from urllib.request import urlopen
-import json
-
+import io
+from PIL import Image
 
 app = Flask(__name__)
 
@@ -32,33 +30,32 @@ def main():
     return "hello"
 
 
-@app.route('/login', methods= ['POST'])
-def index():
-    print(request.is_json)
-    content = request.get_json()
-    print(content)
-
-    username = content['username']
-    password = content['password']
-
-    cursor = mysql.connection.cursor()
-    user_name = (username,)
-    user_id = cursor.execute("""SELECT user_id from users where username = %s""", user_name)
-    user = cursor.fetchall()
-
-    if not user:
-        cursor.close()
-        return "invalid"
-
-    cursor.execute("""SELECT password from credentials where user_id = %s and password = %s""", (user_id, password,))
-    data = cursor.fetchall()
-    cursor.close()
-
-    if not data:
-        return "invalid"
-
-    return "successful"
-
+# @app.route('/login', methods= ['POST'])
+# def index():
+#     print(request.is_json)
+#     content = request.get_json()
+#     print(content)
+#
+#     username = content['username']
+#     password = content['password']
+#
+#     cursor = mysql.connection.cursor()
+#     user_name = (username,)
+#     user_id = cursor.execute("""SELECT user_id from users where username = %s""", user_name)
+#     user = cursor.fetchall()
+#
+#     if not user:
+#         cursor.close()
+#         return "invalid"
+#
+#     cursor.execute("""SELECT password from credentials where user_id = %s and password = %s""", (user_id, password,))
+#     data = cursor.fetchall()
+#     cursor.close()
+#
+#     if not data:
+#         return "invalid"
+#
+#     return "successful"
 
 
 @app.route('/compareface', methods=['GET', 'POST'])
@@ -67,13 +64,21 @@ def compare_two_face():
     return reply
 
 
+@app.route('/addphoto', methods=['POST'])
+def add_face():
 
+    file = request.files["file"]
+    filename = request.form.get("filename")
 
-@app.route('/detectface', methods=['GET', 'POST'])
-def get_face_token():
-    # 把后台的数据返回到前台
-    reply = detect_face()
-    return reply['face_token']
+    img = file.read()
+    byte_stream = io.BytesIO(img)
+    image = Image.open(byte_stream)
+    image.save(r'/Users/xinjiezeng/PycharmProjects/flaskProject/images/' + filename)
+
+    data = dict(request.files)
+    print(data)
+    return "success"
+
 
 
 if __name__ == '__main__':
