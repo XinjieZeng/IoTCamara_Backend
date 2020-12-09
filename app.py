@@ -1,33 +1,59 @@
 from flask import Flask, request
 from facecompare import compare_face
-from flask_mysqldb import MySQL
-import os
 import io
 from PIL import Image
+from flask_sqlalchemy import SQLAlchemy
+import configs
 
 app = Flask(__name__)
+PHOTO_BASE_PATH = r'/Users/xinjiezeng/PycharmProjects/flaskProject/images/'
 
-app.config['MYSQL_HOST'] = os.environ.get('MYSQL_HOST')
-app.config['MYSQL_USER'] = os.environ.get('MYSQL_USER')
-app.config['MYSQL_PASSWORD'] = os.environ.get('MYSQL_PASSWORD')
-app.config['MYSQL_DB'] = os.environ.get('MYSQL_DB')
-app.config['API_KEY'] = os.environ.get('API_KEY')
-app.config['API_SECRET'] = os.environ.get('API_SECRET')
+app.config.from_object(configs)
+db = SQLAlchemy(app)
 
 
-mysql = MySQL(app)
+class Photo(db.Model):
+    __tablename__ = 'photo'
+    photo_id = db.Column(db.INTEGER, primary_key=True)
+    address = db.Column(db.String(50))
 
 
-@app.route('/')
-def main():
-    cursor = mysql.connection.cursor()
-    user_name = ("xinjie",)
-    user_id = cursor.execute("""SELECT user_id from users where username = %s""", user_name)
+@app.route('/compareface', methods=['GET', 'POST'])
+def compare_two_face():
+    reply = compare_face()
+    return reply
 
-    cursor.execute("""SELECT face_token from faces where user_id = %s""", (user_id,))
-    data = cursor.fetchall()
-    cursor.close()
-    return "hello"
+
+@app.route('/addphoto', methods=['POST'])
+def add_face():
+
+    file = request.files["file"]
+    filename = request.form.get("filename")
+
+    img = file.read()
+    byte_stream = io.BytesIO(img)
+    image = Image.open(byte_stream)
+
+    save_photo_in_database(image, filename)
+
+    return "success"
+
+
+def save_photo_in_database(image, filename):
+    photo = Photo(address=filename)
+    db.session.add(photo)
+    db.session.commit()
+    image.save(PHOTO_BASE_PATH + filename)
+
+
+if __name__ == '__main__':
+    app.run(debug=True, host="192.168.254.73")
+
+
+
+
+
+
 
 
 # @app.route('/login', methods= ['POST'])
@@ -56,31 +82,3 @@ def main():
 #         return "invalid"
 #
 #     return "successful"
-
-
-@app.route('/compareface', methods=['GET', 'POST'])
-def compare_two_face():
-    reply = compare_face()
-    return reply
-
-
-@app.route('/addphoto', methods=['POST'])
-def add_face():
-
-    file = request.files["file"]
-    filename = request.form.get("filename")
-
-    img = file.read()
-    byte_stream = io.BytesIO(img)
-    image = Image.open(byte_stream)
-    image.save(r'/Users/xinjiezeng/PycharmProjects/flaskProject/images/' + filename)
-
-    data = dict(request.files)
-    print(data)
-    return "success"
-
-
-
-if __name__ == '__main__':
-    app.run(debug=True, host="192.168.254.73")
-
