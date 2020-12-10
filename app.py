@@ -1,9 +1,8 @@
 from flask import Flask, request
-from facecompare import compare_face
-import io
-from PIL import Image
 from flask_sqlalchemy import SQLAlchemy
 import configs
+from facedetect import detect_face
+from facecompare import compare_face
 
 app = Flask(__name__)
 PHOTO_BASE_PATH = r'/Users/xinjiezeng/PycharmProjects/flaskProject/images/'
@@ -16,34 +15,52 @@ class Photo(db.Model):
     __tablename__ = 'photo'
     photo_id = db.Column(db.INTEGER, primary_key=True)
     address = db.Column(db.String(50))
+    user_id = db.Column(db.Integer)
+    face_token = db.Column(db.String(50))
 
 
-@app.route('/compareface', methods=['GET', 'POST'])
-def compare_two_face():
-    reply = compare_face()
-    return reply
+@app.route('/opengarage', methods=['POST'])
+def open_garage():
+    # get the multipart file
+    file = request.files["file"].read()
+
+    # detect faces
+    try:
+        face_token_1 = detect_face(file)
+    except ValueError:
+        return "fail"
+
+    face_token_2 = Photo.query.filter(Photo.user_id == 1).first().face_token
+
+    # call 3PP to compare faces
+    return compare_face(face_token_1, face_token_2)
+
+
+def open_garage():
+    return True
 
 
 @app.route('/addphoto', methods=['POST'])
-def add_face():
-
-    file = request.files["file"]
+def add_photo():
+    # get the multipart file
+    file = request.files["file"].read()
     filename = request.form.get("filename")
 
-    img = file.read()
-    byte_stream = io.BytesIO(img)
-    image = Image.open(byte_stream)
+    # call 3PP to get face token
+    try:
+        face_token = detect_face(file)
+    except ValueError:
+        return "fail"
 
-    save_photo_in_database(image, filename)
-
+    # save the image and face token in database
+    save_photo_in_database(filename, face_token)
     return "success"
 
 
-def save_photo_in_database(image, filename):
-    photo = Photo(address=filename)
+def save_photo_in_database(filename, token):
+    photo = Photo(address=filename, user_id=1, face_token=token)
     db.session.add(photo)
     db.session.commit()
-    image.save(PHOTO_BASE_PATH + filename)
 
 
 if __name__ == '__main__':

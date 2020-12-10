@@ -5,12 +5,10 @@ from flask import json
 import os
 
 
-def compare_face():
+def compare_face(face_token_1, face_token_2):
     http_url = 'https://api-cn.faceplusplus.com/facepp/v3/compare'
-    key = os.environ.get("API_KEY")
-    secret = os.environ.get("API_SECRET")
-    token1 = "47ca871ce04f367fa099d542b90aeb9d"
-    token2 = "4e79e2d1e33b44fa5ce6bedf25e4e338"
+    key = "vTLWlxe8ooTcPutTopW624ANrOthhNeh"
+    secret = "yD118XLLTEaJCh4N2Zzs0XzJHViobsFL"
 
     boundary = '----------%s' % hex(int(time.time() * 1000))
     data = []
@@ -22,10 +20,10 @@ def compare_face():
     data.append(secret)
     data.append('--%s' % boundary)
     data.append('Content-Disposition: form-data; name="%s"\r\n' % 'face_token1')
-    data.append(token1)
+    data.append(face_token_1)
     data.append('--%s' % boundary)
     data.append('Content-Disposition: form-data; name="%s"\r\n' % 'face_token2')
-    data.append(token2)
+    data.append(face_token_2)
     data.append('--%s--\r\n' % boundary)
 
     for i, d in enumerate(data):
@@ -51,9 +49,11 @@ def compare_face():
 
         data = json.loads(reply)
         if int(data["confidence"]) >= int(data['thresholds']['1e-4']):
-            return {"result": True, "msg": "same people"}
+            print('{"result": True, "msg": "same people"}')
+            return "success"
         else:
-            return {"result": False, "msg": "different people"}
+            print('{"result": False, "msg": "different people"}')
+            return "fail"
 
     except urllib.error.HTTPError as e:
         print(e.read().decode('utf-8'))

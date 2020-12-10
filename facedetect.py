@@ -2,14 +2,17 @@
 import urllib.request
 import urllib.error
 import time
-import os
+import json
+
+PHOTO_BASE_PATH = r'/Users/xinjiezeng/PycharmProjects/flaskProject/images/'
 
 
-def detect_face():
+def detect_face(img):
     http_url = 'https://api-cn.faceplusplus.com/facepp/v3/detect'
-    key = os.environ.get("API_KEY")
-    secret = os.environ.get("API_SECRET")
-    image = r"/Users/xinjiezeng/Pictures/xinjie5.jpg"
+    # key = os.environ.get("API_KEY")
+    # secret = os.environ.get("API_SECRET")
+    key = "vTLWlxe8ooTcPutTopW624ANrOthhNeh"
+    secret = "yD118XLLTEaJCh4N2Zzs0XzJHViobsFL"
 
     boundary = '----------%s' % hex(int(time.time() * 1000))
     data = []
@@ -20,11 +23,14 @@ def detect_face():
     data.append('Content-Disposition: form-data; name="%s"\r\n' % 'api_secret')
     data.append(secret)
     data.append('--%s' % boundary)
-    fr = open(image, 'rb')
+    # fr = open(PHOTO_BASE_PATH+path, 'rb')
     data.append('Content-Disposition: form-data; name="%s"; filename=" "' % 'image_file')
     data.append('Content-Type: %s\r\n' % 'application/octet-stream')
-    data.append(fr.read())
-    fr.close()
+    # print(img)
+    data.append(img)
+    # data.append(fr.read())
+    # print(fr.read())
+    # fr.close()
     data.append('--%s' % boundary)
     data.append('Content-Disposition: form-data; name="%s"\r\n' % 'return_landmark')
     data.append('1')
@@ -48,14 +54,18 @@ def detect_face():
 
     try:
         # post data to server
-        resp = urllib.request.urlopen(req, timeout=500)
+        resp = urllib.request.urlopen(req, timeout=5000)
         # get response
         qrcont = resp.read()
         # if you want to load as json, you should decode first,
         # for example: json.loads(qrount.decode('utf-8'))
         reply = qrcont.decode('utf-8')
-        print(reply)
-        return reply
+        j = json.loads(reply)
+
+        if not j["faces"]:
+            raise ValueError("cannot detect the face")
+
+        return j['faces'][0]['face_token']
 
     except urllib.error.HTTPError as e:
         print(e.read().decode('utf-8'))
