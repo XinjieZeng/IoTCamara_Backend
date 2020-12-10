@@ -1,11 +1,12 @@
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
-import configs
+from configs import PHOTO_BASE_PATH
 from facedetect import detect_face
 from facecompare import compare_face
 from open_garage_door import open_garage_door
 from state import SUCCESS
 from state import FAIL
+import configs
 
 
 app = Flask(__name__)
@@ -73,11 +74,16 @@ def add_photo():
         return FAIL
 
     # save the image and face token in database
-    save_photo_in_database(filename, face_token)
+    save_photo(filename, face_token, file)
     return SUCCESS
 
 
-def save_photo_in_database(filename, token):
+def save_photo(filename, token, file):
+    # convert binary to jpg and save
+    with open(PHOTO_BASE_PATH + filename, "wb") as f:
+        f.write(file)
+
+    # add a record in database
     photo = Photo(address=filename, user_id=1, face_token=token)
     db.session.add(photo)
     db.session.commit()
