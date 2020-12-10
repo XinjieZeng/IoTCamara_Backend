@@ -2,22 +2,22 @@ import urllib.request
 import urllib.error
 import time
 from flask import json
-import os
+from configs import KEY
+from configs import SECRET
+from configs import COMPARE_FACE_URL
 
 
 def compare_face(face_token_1, face_token_2):
-    http_url = 'https://api-cn.faceplusplus.com/facepp/v3/compare'
-    key = "vTLWlxe8ooTcPutTopW624ANrOthhNeh"
-    secret = "yD118XLLTEaJCh4N2Zzs0XzJHViobsFL"
+    http_url = COMPARE_FACE_URL
 
     boundary = '----------%s' % hex(int(time.time() * 1000))
     data = []
     data.append('--%s' % boundary)
     data.append('Content-Disposition: form-data; name="%s"\r\n' % 'api_key')
-    data.append(key)
+    data.append(KEY)
     data.append('--%s' % boundary)
     data.append('Content-Disposition: form-data; name="%s"\r\n' % 'api_secret')
-    data.append(secret)
+    data.append(SECRET)
     data.append('--%s' % boundary)
     data.append('Content-Disposition: form-data; name="%s"\r\n' % 'face_token1')
     data.append(face_token_1)
@@ -50,10 +50,10 @@ def compare_face(face_token_1, face_token_2):
         data = json.loads(reply)
         if int(data["confidence"]) >= int(data['thresholds']['1e-4']):
             print('{"result": True, "msg": "same people"}')
-            return "success"
+            return StateEnum.SUCCESS
         else:
             print('{"result": False, "msg": "different people"}')
-            return "fail"
+            return StateEnum.FAIL
 
     except urllib.error.HTTPError as e:
         print(e.read().decode('utf-8'))
