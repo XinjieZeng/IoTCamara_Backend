@@ -5,6 +5,7 @@ import time
 import json
 from configs import KEY
 from configs import SECRET
+
 from configs import DETECT_FACE_URL
 from state import CAN_NOT_DETECT_FACE
 

@@ -1,4 +1,5 @@
-from flask import Flask, request
+# -*- coding: utf-8 -*-
+from flask import Flask, request, session
 from flask_sqlalchemy import SQLAlchemy
 from configs import PHOTO_BASE_PATH
 from facedetect import detect_face
@@ -7,7 +8,6 @@ from open_garage_door import open_garage_door
 from state import SUCCESS
 from state import FAIL
 import configs
-
 
 app = Flask(__name__)
 app.config.from_object(configs)
@@ -33,6 +33,8 @@ class User(db.Model):
 def index():
     username = request.form.get('username')
     password = request.form.get('password')
+    print("username " + username)
+    print("password" + password)
 
     user = User.query.filter(User.username == username, User.password == password).first()
 
@@ -67,6 +69,8 @@ def add_photo():
     file = request.files["file"].read()
     filename = request.form.get("filename")
 
+    print(session.get('userid'))
+    print(session.get('username'))
     # call 3PP to get face token
     try:
         face_token = detect_face(file)
@@ -90,7 +94,8 @@ def save_photo(filename, token, file):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host="192.168.254.73")
+    app.debug = True
+    app.run(debug=True)
 
 
 

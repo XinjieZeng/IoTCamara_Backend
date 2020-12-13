@@ -1,0 +1,9 @@
+gunicorn
+gevent
+flask
+pymysql
+Flask-SQLAlchemy
+sqlalchemy
+requests
+mysql-client
+mysqlclient

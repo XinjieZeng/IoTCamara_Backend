@@ -1,10 +1,12 @@
-import urllib.request
-import urllib.error
+# -*- coding: utf-8 -*-
+import urllib
 import time
 from flask import json
 from configs import KEY
 from configs import SECRET
 from configs import COMPARE_FACE_URL
+from state import SUCCESS
+from state import FAIL
 
 
 def compare_face(face_token_1, face_token_2):
@@ -50,10 +52,10 @@ def compare_face(face_token_1, face_token_2):
         data = json.loads(reply)
         if int(data["confidence"]) >= int(data['thresholds']['1e-4']):
             print('{"result": True, "msg": "same people"}')
-            return StateEnum.SUCCESS
+            return SUCCESS
         else:
             print('{"result": False, "msg": "different people"}')
-            return StateEnum.FAIL
+            return FAIL
 
     except urllib.error.HTTPError as e:
         print(e.read().decode('utf-8'))

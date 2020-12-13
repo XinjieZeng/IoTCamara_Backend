@@ -2,10 +2,17 @@ import requests
 from configs import GARAGE_CREDENTIAL_URL
 from configs import MY_Q_USERNAME
 from configs import MY_Q_PASSWORD
+from state import SUCCESS
 
 
 def open_garage_door(img):
-   security_token = get_security_token()
+    security_token = get_security_token()
+    open(security_token)
+
+
+def open(security_token):
+    # TODO: call the endpoint with security_token
+    return SUCCESS
 
 
 def get_security_token():
@@ -19,6 +26,3 @@ def get_security_token():
     response = requests.post(GARAGE_CREDENTIAL_URL, data=data, headers=headers)
     return response.content
 
-
-if __name__ == '__main__':
-    open_garage_door("ddd")
